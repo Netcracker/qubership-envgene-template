@@ -49,7 +49,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Update pom.xml
-        uses: Netcracker/qubership-workflow-hub/actions/update-pom-release@main
+        uses: Netcracker/qubership-workflow-hub/actions/pom-updater@main
         with:
           new_value: ${{ github.event.inputs.version }}
       - name: Commit Changes
