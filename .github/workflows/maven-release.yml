@@ -79,14 +79,14 @@ jobs:
     needs: [update-pom-version]
     uses: Netcracker/qubership-workflow-hub/.github/workflows/maven-publish.yml@main
     with:
-      maven-command: "--batch-mode deploy"
-      java-version: ${{ github.event.inputs.java_version }}
+      maven_command: "--batch-mode deploy"
+      java_version: ${{ github.event.inputs.java_version }}
       version: ${{ github.event.inputs.version }}
     secrets:
-      maven-username: ${{ secrets.MAVEN_USER }}
-      maven-password: ${{ secrets.MAVEN_PASSWORD }}
-      maven-gpg-passphrase: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
-      maven-gpg-private_key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+      maven_username: ${{ secrets.MAVEN_USER }}
+      maven_password: ${{ secrets.MAVEN_PASSWORD }}
+      maven_gpg_passphrase: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+      maven_gpg_private_key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
 
   github-release:
     needs: [upload_to_maven_central]
