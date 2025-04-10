@@ -117,6 +117,6 @@
         </plugins>
     </build>
     <properties>
-        <revision>0.0.5</revision>
+        <revision>0.0.6</revision>
     </properties>
 </project>
