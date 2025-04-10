@@ -23,18 +23,6 @@ deployParameters:
   test_parameter_2: "bla bla bla"
 {% endif %}
 
-{% if "Data-Anonymization-Tool" in current_env.solution_structure %}
-  test_parameter_3: "{{ current_env.solution_structure['Data-Anonymization-Tool']['data-management'].namespace }}"
-{% endif %}
-
-{% if "test_value_1" in current_env.solution_structure %}
-  test_parameter_4: "{{ current_env.solution_structure['Data-Anonymization-Tool']['data-management'].namespace }}"
-{% endif %}
-
-{% if "Data-Anonymization-Tool" in current_env.solution_structure %}
-  test_parameter_5: "{{ current_env.solution_structure['Data-Anonymization-Tool']['data-management'].version }}"
-{% endif %}
-
 e2eParameters: {}
 technicalConfigurationParameters:
   CORE_NAMESPACE: "{{current_env.name}}-core"
