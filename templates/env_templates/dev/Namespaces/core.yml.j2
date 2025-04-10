@@ -27,10 +27,6 @@ deployParameters:
   test_parameter: "{{ current_env.solution_structure['Data-Anonymization-Tool']['data-management'].namespace }}"
 {% endif %}
 
-{% if "test_value_1" in current_env.solution_structure %}
-  test_parameter: "{{ current_env.solution_structure['Data-Anonymization-Tool']['data-management'].namespace }}"
-{% endif %}
-
 {% if "Data-Anonymization-Tool" in current_env.solution_structure %}
   test_parameter: "{{ current_env.solution_structure['test_value_1']['data-management'].namespace }}"
 {% endif %}
