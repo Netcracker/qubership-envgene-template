@@ -19,7 +19,7 @@ deployParameters:
 {% if "test_val" in current_env.solution_structure %}
   test_parameter: "bla bla bla"
 {% endif %}
-   test_parameter: "{{ current_env.solution_structure.BSS-Config-Umbrella-UI.bss.namespace }}"
+   test_parameter: "{{ current_env.solution_structure["BSS-Config-Umbrella-UI"].bss.namespace }}"
 e2eParameters: {}
 technicalConfigurationParameters:
   CORE_NAMESPACE: "{{current_env.name}}-core"
