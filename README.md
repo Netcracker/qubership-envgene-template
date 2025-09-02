@@ -1,7 +1,6 @@
 # Qubership Envgene Template
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Maven Central](https://img.shields.io/maven-central/v/org.qubership/qubership_envgene_templates.svg)](https://search.maven.org/artifact/org.qubership/qubership_envgene_templates)
 
 Templates for creating Qubership Envgene instances with support for various environments and configurations.
 
