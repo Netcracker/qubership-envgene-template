@@ -137,7 +137,7 @@ jobs:
       server-id: ${{ github.event.inputs.profile }}
       ref: ${{ github.ref }}
     secrets:
-      maven-username: ${{ secrets.MAVEN_USER }}
-      maven-token: ${{ secrets.MAVEN_PASSWORD }}
+      maven-username: ${{ github.actor }}
+      maven-token: ${{ secrets.GITHUB_TOKEN }}
       gpg-passphrase: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
       gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
