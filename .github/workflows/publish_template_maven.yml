@@ -15,24 +15,31 @@ on:
     inputs:
       version:
         required: true
-        default: '0.0.1'
+        default: '1.0.0'
         type: string
-        description: 'Templates version (e.g., 0.0.1)'
+        description: 'Release version (e.g., 1.0.0)'
       java-version:
         required: false
         type: string
-        default: "22"
-        description: 'Java version (e.g., 22)'
+        default: "21"
+        description: 'Java version (e.g., 21)'
       profile:
-        required: false
-        type: string
+        type: choice
         default: 'github'
         description: 'Release mode (github or central)'
+        required: true
+        options:
+          - github
+          - central
       dry-run:
         required: false
         type: boolean
         default: false
         description: 'Dry run'
+
+permissions:
+  contents: write
+  packages: write
 
 jobs:
   check-tag:
@@ -40,30 +47,30 @@ jobs:
     steps:
       - name: Input parameters
         run: |
-          echo "Version: ${{ inputs.version }}" >> $GITHUB_STEP_SUMMARY
-          echo "Java version: ${{ inputs.java-version }}" >> $GITHUB_STEP_SUMMARY
+          echo "Version: ${{ github.event.inputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "Java version: ${{ github.event.inputs.java-version }}" >> $GITHUB_STEP_SUMMARY
 
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Check if tag exists
         id: check_tag
-        uses: netcracker/qubership-workflow-hub/actions/tag-checker@v1.0.3
+        uses: netcracker/qubership-workflow-hub/actions/tag-checker@v1.0.4
         with:
-          tag: 'v${{ inputs.version }}'
+          tag: 'v${{ github.event.inputs.version }}'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Output result
         run: |
           echo "Tag exists: ${{ steps.check_tag.outputs.exists }}"
-          echo "Tag name: v${{ inputs.version }}"
+          echo "Tag name: v${{ github.event.inputs.version }}"
 
       - name: Fail if tag exists
         if: steps.check_tag.outputs.exists == 'true'
         run: |
-          echo "Tag already exists: v${{ inputs.version }}" >> $GITHUB_STEP_SUMMARY
-          echo "Tag already exists: v${{ inputs.version }}"
+          echo "Tag already exists: v${{ github.event.inputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "Tag already exists: v${{ github.event.inputs.version }}"
           exit 1
 
   update-pom-version:
@@ -79,21 +86,21 @@ jobs:
 
       - name: Update pom.xml
         id: config
-        uses: netcracker/qubership-workflow-hub/actions/pom-updater@v1.0.3
+        uses: netcracker/qubership-workflow-hub/actions/pom-updater@v1.0.4
         with:
-          new_value: ${{ inputs.version }}
+          new_value: ${{ github.event.inputs.version }}
 
       - name: Commit Changes
-        uses: netcracker/qubership-workflow-hub/actions/commit-and-push@v1.0.3
+        uses: netcracker/qubership-workflow-hub/actions/commit-and-push@v1.0.4
         with:
-          commit_message: "Update pom.xml version to ${{ inputs.version }}"
+          commit_message: "Update pom.xml version to ${{ github.event.inputs.version }}"
 
   mvn-package:
     needs: [update-pom-version]
     uses: netcracker/qubership-workflow-hub/.github/workflows/maven-publish.yml@v1.0.3
     with:
       maven-command: "--batch-mode package"
-      java-version: ${{ inputs.java-version }}
+      java-version: ${{ github.event.inputs.java-version }}
       upload-artifact: true
       artifact-id: ${{ needs.update-pom-version.outputs.artifact_id }}
       ref: ${{ github.ref }}
@@ -103,18 +110,28 @@ jobs:
       gpg-passphrase: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
       gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
 
-  tag:
+  tests:
     needs: [mvn-package]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run tests
+        run: echo "Running tests here"
+
+  tag:
+    needs: [tests]
     uses: netcracker/qubership-workflow-hub/.github/workflows/tag-creator.yml@v1.0.3
     with:
-      tag-name: "v${{ inputs.version }}"
+      tag-name: "v${{ github.event.inputs.version }}"
 
   mvn-deploy:
-    needs: [tag]
+    needs: [update-pom-version, tag]
     uses: netcracker/qubership-workflow-hub/.github/workflows/maven-publish.yml@v1.0.3
     with:
-      maven-command: ${{ (inputs.dry-run == 'true' && '--batch-mode package') || inputs.profile == 'github'  && '--batch-mode deploy -P github' || '--batch-mode deploy -P central' }}
-      java-version: ${{ inputs.java-version }}
+      maven-command: ${{ (github.event.inputs.dry-run == 'true' && '--batch-mode package') || github.event.inputs.profile == 'github'  && '--batch-mode deploy -P github' || '--batch-mode deploy -P central' }}
+      java-version: ${{ github.event.inputs.java-version }}
       upload-artifact: false
       artifact-id: ${{ needs.update-pom-version.outputs.artifact_id }}
       server-id: ${{ inputs.profile }}
