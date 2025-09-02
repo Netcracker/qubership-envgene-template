@@ -134,7 +134,7 @@ jobs:
       java-version: ${{ github.event.inputs.java-version }}
       upload-artifact: false
       artifact-id: ${{ needs.update-pom-version.outputs.artifact_id }}
-      server-id: ${{ inputs.profile }}
+      server-id: ${{ github.event.inputs.profile }}
       ref: ${{ github.ref }}
     secrets:
       maven-username: ${{ secrets.MAVEN_USER }}
