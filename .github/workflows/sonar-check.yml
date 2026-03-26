@@ -17,6 +17,8 @@ jobs:
         uses: netcracker/qubership-workflow-hub/actions/maven-snapshot-deploy@main
         with:
           java-version: 21
+          # Default target-store is "central"; the action then adds -Pcentral and GPG runs. Sonar only needs -Pgithub.
+          target-store: github
           maven-command: >
             --batch-mode clean verify
             org.sonarsource.scanner.maven:sonar-maven-plugin:${{ vars.SONAR_PLUGIN_VERSION }}:sonar
