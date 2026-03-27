@@ -16,6 +16,7 @@ from pathlib import Path
 import yaml
 from jinja2 import ChainableUndefined, Environment
 from jinja2.exceptions import TemplateError, TemplateSyntaxError, UndefinedError
+from jinja2.sandbox import SandboxedEnvironment
 from yaml import YAMLError
 
 
@@ -29,7 +30,9 @@ def _ansible_lookup_stub(*_args, **_kwargs) -> str:
 
 
 def _jinja_env() -> Environment:
-    env = Environment(
+    # SandboxedEnvironment limits what templates can execute (imports, unsafe callables).
+    # Input is always file content from the repo checkout, not interactive user input.
+    env = SandboxedEnvironment(
         undefined=ChainableUndefined,
         trim_blocks=True,
         lstrip_blocks=True,
