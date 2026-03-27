@@ -215,7 +215,8 @@
     <properties>
         <revision>0.0.1</revision>
         <!-- SonarScanner for Maven honors these; sonar-project.properties alone is often overridden for multi-root layouts. -->
-        <sonar.sources>templates,src/assembly,.github,scripts,tests</sonar.sources>
+        <!-- Do not list tests/ under sonar.sources — sonar.tests must be disjoint from sonar.sources. -->
+        <sonar.sources>templates,src/assembly,.github,scripts</sonar.sources>
         <sonar.tests>tests</sonar.tests>
         <sonar.coverage.exclusions>templates/**,.github/**,src/assembly/**</sonar.coverage.exclusions>
         <sonar.python.version>3.12</sonar.python.version>
