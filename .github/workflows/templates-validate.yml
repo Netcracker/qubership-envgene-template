@@ -1,0 +1,37 @@
+name: Validate templates
+
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - "templates/**"
+      - "scripts/validate_templates.py"
+      - "scripts/requirements-validate.txt"
+      - ".github/workflows/templates-validate.yml"
+  pull_request:
+    branches: ["**"]
+    paths:
+      - "templates/**"
+      - "scripts/validate_templates.py"
+      - "scripts/requirements-validate.txt"
+      - ".github/workflows/templates-validate.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install validation dependencies
+        run: pip install -r scripts/requirements-validate.txt
+
+      - name: Validate YAML and Jinja templates
+        run: python scripts/validate_templates.py
