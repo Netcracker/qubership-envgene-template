@@ -37,13 +37,11 @@ on:
         default: false
         description: 'Dry run'
 
-permissions:
-  contents: write
-  packages: write
-
 jobs:
   check-tag:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Input parameters
         run: |
@@ -76,6 +74,8 @@ jobs:
   update-pom-version:
     needs: [check-tag]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     outputs:
       artifact_id: ${{ steps.config.outputs.artifact_id }}
     steps:
@@ -97,6 +97,9 @@ jobs:
 
   mvn-package:
     needs: [update-pom-version]
+    permissions:
+      contents: read
+      packages: read
     uses: netcracker/qubership-workflow-hub/.github/workflows/maven-publish.yml@v1.0.3
     with:
       maven-command: "--batch-mode package"
@@ -113,6 +116,8 @@ jobs:
   tests:
     needs: [mvn-package]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -122,12 +127,17 @@ jobs:
 
   tag:
     needs: [tests]
+    permissions:
+      contents: write
     uses: netcracker/qubership-workflow-hub/.github/workflows/tag-creator.yml@v1.0.3
     with:
       tag-name: "v${{ github.event.inputs.version }}"
 
   mvn-deploy:
     needs: [update-pom-version, tag]
+    permissions:
+      contents: read
+      packages: write
     uses: netcracker/qubership-workflow-hub/.github/workflows/maven-publish.yml@v1.0.3
     with:
       maven-command: ${{ (github.event.inputs.dry-run == 'true' && '--batch-mode package') || github.event.inputs.profile == 'github'  && '--batch-mode deploy -P github' || '--batch-mode deploy -P central' }}
