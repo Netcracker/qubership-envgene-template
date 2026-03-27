@@ -6,8 +6,7 @@ from pathlib import Path
 
 from scripts.validate_templates import run_validation
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-TEMPLATES = REPO_ROOT / "templates"
+TEMPLATES = Path(__file__).resolve().parent.parent / "templates"
 
 
 def test_repository_templates_are_valid() -> None:

@@ -14,7 +14,8 @@ import sys
 from pathlib import Path
 
 import yaml
-from jinja2 import ChainableUndefined, Environment, TemplateSyntaxError, UndefinedError
+from jinja2 import ChainableUndefined, Environment
+from jinja2.exceptions import TemplateError, TemplateSyntaxError, UndefinedError
 from yaml import YAMLError
 
 
@@ -41,7 +42,7 @@ def _load_yaml_documents(text: str, path: Path) -> None:
     try:
         list(yaml.safe_load_all(text))
     except YAMLError as e:
-        raise ValueError(f"YAML parse error: {e}") from e
+        raise ValueError(f"YAML parse error in {path}: {e}") from e
 
 
 def validate_plain_yaml(path: Path) -> None:
@@ -64,7 +65,7 @@ def validate_jinja_yaml(path: Path, env: Environment) -> None:
         rendered = template.render()
     except UndefinedError as e:
         raise ValueError(f"Jinja render error (missing variable or filter): {e}") from e
-    except Exception as e:
+    except TemplateError as e:
         raise ValueError(f"Jinja render error: {e}") from e
     if not rendered.strip():
         return
