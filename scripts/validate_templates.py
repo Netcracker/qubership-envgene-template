@@ -2,7 +2,7 @@
 """
 Validate Envgene templates under templates/:
   - *.yml / *.yaml: strict YAML parse (no Jinja processing).
-  - *.j2 / *.yml.j2: Jinja parse, render with stub context (Ansible lookup stub), then YAML parse.
+  - *.j2 / *.yml.j2: Jinja via FileSystemLoader + get_template (no from_string), then YAML parse.
 
 Exit code 1 if any file fails.
 """
@@ -14,7 +14,7 @@ import sys
 from pathlib import Path
 
 import yaml
-from jinja2 import ChainableUndefined, Environment
+from jinja2 import ChainableUndefined, FileSystemLoader
 from jinja2.exceptions import TemplateError, TemplateSyntaxError, UndefinedError
 from jinja2.sandbox import SandboxedEnvironment
 from yaml import YAMLError
@@ -29,10 +29,11 @@ def _ansible_lookup_stub(*_args, **_kwargs) -> str:
     return ""
 
 
-def _jinja_env() -> Environment:
-    # SandboxedEnvironment limits what templates can execute (imports, unsafe callables).
-    # Input is always file content from the repo checkout, not interactive user input.
+def _jinja_env_for_template(path: Path) -> SandboxedEnvironment:
+    """Sandboxed env with loader rooted at the template file directory (load by file name, not from_string)."""
+    loader = FileSystemLoader(str(path.resolve().parent))
     env = SandboxedEnvironment(
+        loader=loader,
         undefined=ChainableUndefined,
         trim_blocks=True,
         lstrip_blocks=True,
@@ -55,16 +56,18 @@ def validate_plain_yaml(path: Path) -> None:
     _load_yaml_documents(text, path)
 
 
-def validate_jinja_yaml(path: Path, env: Environment) -> None:
+def validate_jinja_yaml(path: Path) -> None:
     text = path.read_text(encoding="utf-8")
     if not text.strip():
         return
+    env = _jinja_env_for_template(path)
     try:
-        env.parse(text)
+        template = env.get_template(path.name)
     except TemplateSyntaxError as e:
         raise ValueError(f"Jinja syntax error: {e}") from e
+    except TemplateError as e:
+        raise ValueError(f"Jinja template load error: {e}") from e
     try:
-        template = env.from_string(text)
         rendered = template.render()
     except UndefinedError as e:
         raise ValueError(f"Jinja render error (missing variable or filter): {e}") from e
@@ -92,14 +95,13 @@ def run_validation(root: Path, *, quiet: bool = False) -> int:
     """
     Validate all template files under root. Returns 0 on success, 1 if any file fails.
     """
-    env = _jinja_env()
     errors: list[tuple[Path, str]] = []
     files = iter_template_files(root)
 
     for path in files:
         try:
             if _is_jinja_template(path):
-                validate_jinja_yaml(path, env)
+                validate_jinja_yaml(path)
             else:
                 validate_plain_yaml(path)
         except ValueError as e:

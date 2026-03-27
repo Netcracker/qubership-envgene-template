@@ -5,13 +5,14 @@ from __future__ import annotations
 import subprocess
 import sys
 from pathlib import Path
+from unittest.mock import MagicMock
 
 import pytest
-from jinja2 import Environment, StrictUndefined
-from jinja2.exceptions import TemplateError
+from jinja2 import Environment, FileSystemLoader, StrictUndefined
+from jinja2.exceptions import TemplateError, TemplateNotFound
+from jinja2.sandbox import SandboxedEnvironment
 
 from scripts.validate_templates import (
-    _jinja_env,
     iter_template_files,
     main,
     run_validation,
@@ -64,33 +65,49 @@ def test_iter_template_files_non_dir() -> None:
     assert iter_template_files(Path("/nonexistent_path_12345")) == []
 
 
-def test_jinja_undefined_strict(tmp_path: Path) -> None:
-    env = Environment(undefined=StrictUndefined, trim_blocks=True, lstrip_blocks=True)
-    env.globals["lookup"] = lambda *a, **k: ""
+def test_jinja_undefined_strict(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    custom = Environment(
+        undefined=StrictUndefined,
+        trim_blocks=True,
+        lstrip_blocks=True,
+        loader=FileSystemLoader(str(tmp_path)),
+    )
+    custom.globals["lookup"] = lambda *a, **k: ""
     p = tmp_path / "u.yml.j2"
     p.write_text("a: {{ undefined_name }}\n", encoding="utf-8")
+
+    def _factory(_path: Path) -> Environment:
+        return custom
+
+    monkeypatch.setattr("scripts.validate_templates._jinja_env_for_template", _factory)
     with pytest.raises(ValueError, match="Jinja render error"):
-        validate_jinja_yaml(p, env)
+        validate_jinja_yaml(p)
+
+
+def test_jinja_template_load_error_non_syntax(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    p = tmp_path / "t.yml.j2"
+    p.write_text("x: 1\n", encoding="utf-8")
+
+    def _boom(_self: SandboxedEnvironment, _name: str) -> None:
+        raise TemplateNotFound("missing")
+
+    monkeypatch.setattr(SandboxedEnvironment, "get_template", _boom)
+    with pytest.raises(ValueError, match="Jinja template load error"):
+        validate_jinja_yaml(p)
 
 
 def test_jinja_template_error_on_render(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    env = _jinja_env()
     p = tmp_path / "t.yml.j2"
     p.write_text("x: 1\n", encoding="utf-8")
-    orig = env.from_string
+    mock_template = MagicMock()
+    mock_template.render.side_effect = TemplateError("forced")
 
-    def wrap(s: str):
-        t = orig(s)
+    def _fake_get(_self: SandboxedEnvironment, _name: str):
+        return mock_template
 
-        def boom(*_a, **_kw):
-            raise TemplateError("forced")
-
-        t.render = boom  # type: ignore[method-assign]
-        return t
-
-    monkeypatch.setattr(env, "from_string", wrap)
+    monkeypatch.setattr(SandboxedEnvironment, "get_template", _fake_get)
     with pytest.raises(ValueError, match="Jinja render error"):
-        validate_jinja_yaml(p, env)
+        validate_jinja_yaml(p)
 
 
 def test_oserror_while_reading(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
