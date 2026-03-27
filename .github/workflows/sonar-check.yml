@@ -31,7 +31,7 @@ jobs:
             --junitxml=pytest-report.xml \
             -q
 
-      - name: Build java
+      - name: Build template github package
         uses: netcracker/qubership-workflow-hub/actions/maven-snapshot-deploy@main
         with:
           java-version: 21
