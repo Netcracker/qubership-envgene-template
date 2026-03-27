@@ -13,6 +13,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # Full history so SonarScanner can attach SCM blame (no shallow-clone warning).
+          fetch-depth: 0
       - name: Build java
         uses: netcracker/qubership-workflow-hub/actions/maven-snapshot-deploy@main
         with:
