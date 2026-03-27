@@ -219,6 +219,7 @@
         <sonar.sources>templates,src/assembly,.github,scripts</sonar.sources>
         <sonar.tests>tests</sonar.tests>
         <sonar.coverage.exclusions>templates/**,.github/**,src/assembly/**</sonar.coverage.exclusions>
+        <sonar.cpd.exclusions>templates/**,.github/**</sonar.cpd.exclusions>
         <sonar.python.version>3.12</sonar.python.version>
     </properties>
 </project>
