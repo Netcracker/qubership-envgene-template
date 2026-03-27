@@ -31,6 +31,12 @@ jobs:
             --junitxml=pytest-report.xml \
             -q
 
+      - name: Verify reports for Sonar
+        run: |
+          test -f coverage.xml
+          test -f pytest-report.xml
+          ls -la coverage.xml pytest-report.xml
+
       - name: Build template github package
         uses: netcracker/qubership-workflow-hub/actions/maven-snapshot-deploy@main
         with:
@@ -43,5 +49,7 @@ jobs:
             -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }}
             -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }}
             -Dsonar.host.url=${{ vars.SONAR_HOST_URL }}
+            -Dsonar.python.coverage.reportPaths=${{ github.workspace }}/coverage.xml
+            -Dsonar.python.xunit.reportPath=${{ github.workspace }}/pytest-report.xml
           maven-token: ${{ secrets.GITHUB_TOKEN }}
           sonar-token: ${{ secrets.SONAR_TOKEN }}
