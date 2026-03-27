@@ -1,0 +1,8 @@
+# Python / pytest / coverage (local & CI artifacts)
+.coverage
+coverage.xml
+pytest-report.xml
+htmlcov/
+.pytest_cache/
+__pycache__/
+*.py[cod]

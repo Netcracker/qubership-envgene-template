@@ -84,16 +84,10 @@ def iter_template_files(root: Path) -> list[Path]:
     return out
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(description="Validate templates/ YAML and Jinja templates.")
-    parser.add_argument(
-        "--root",
-        type=Path,
-        default=Path(__file__).resolve().parent.parent / "templates",
-        help="Directory to scan (default: repo templates/)",
-    )
-    args = parser.parse_args()
-    root: Path = args.root
+def run_validation(root: Path, *, quiet: bool = False) -> int:
+    """
+    Validate all template files under root. Returns 0 on success, 1 if any file fails.
+    """
     env = _jinja_env()
     errors: list[tuple[Path, str]] = []
     files = iter_template_files(root)
@@ -110,13 +104,27 @@ def main() -> int:
             errors.append((path, str(e)))
 
     if errors:
-        print("Template validation failed:\n", file=sys.stderr)
-        for path, msg in errors:
-            print(f"  {path}: {msg}", file=sys.stderr)
+        if not quiet:
+            print("Template validation failed:\n", file=sys.stderr)
+            for path, msg in errors:
+                print(f"  {path}: {msg}", file=sys.stderr)
         return 1
 
-    print(f"OK: {len(files)} file(s) under {root}")
+    if not quiet:
+        print(f"OK: {len(files)} file(s) under {root}")
     return 0
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Validate templates/ YAML and Jinja templates.")
+    parser.add_argument(
+        "--root",
+        type=Path,
+        default=Path(__file__).resolve().parent.parent / "templates",
+        help="Directory to scan (default: repo templates/)",
+    )
+    args = parser.parse_args()
+    return run_validation(args.root, quiet=False)
 
 
 if __name__ == "__main__":

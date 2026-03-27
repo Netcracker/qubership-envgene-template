@@ -16,6 +16,21 @@ jobs:
         with:
           # Full history so SonarScanner can attach SCM blame (no shallow-clone warning).
           fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Template tests (coverage + JUnit for Sonar)
+        run: |
+          pip install -r scripts/requirements-validate.txt
+          pytest tests/ \
+            --cov=scripts \
+            --cov-report=xml \
+            --junitxml=pytest-report.xml \
+            -q
+
       - name: Build java
         uses: netcracker/qubership-workflow-hub/actions/maven-snapshot-deploy@main
         with:

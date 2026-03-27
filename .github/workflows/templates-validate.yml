@@ -5,15 +5,17 @@ on:
     branches: ["**"]
     paths:
       - "templates/**"
-      - "scripts/validate_templates.py"
-      - "scripts/requirements-validate.txt"
+      - "tests/**"
+      - "scripts/**"
+      - "pytest.ini"
       - ".github/workflows/templates-validate.yml"
   pull_request:
     branches: ["**"]
     paths:
       - "templates/**"
-      - "scripts/validate_templates.py"
-      - "scripts/requirements-validate.txt"
+      - "tests/**"
+      - "scripts/**"
+      - "pytest.ini"
       - ".github/workflows/templates-validate.yml"
   workflow_dispatch:
 
@@ -33,5 +35,5 @@ jobs:
       - name: Install validation dependencies
         run: pip install -r scripts/requirements-validate.txt
 
-      - name: Validate YAML and Jinja templates
-        run: python scripts/validate_templates.py
+      - name: Run template tests (same as Sonar job)
+        run: pytest tests/ -q
