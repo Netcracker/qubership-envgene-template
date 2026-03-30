@@ -1,39 +1,42 @@
 ---
-name: "{{ current_env.cloudNameWithCluster }}"
-apiUrl: ""
-apiPort: ""
+name: "{{current_env.cloudNameWithCluster}}"
+apiUrl: "{{current_env.cloud_passport.cloud.CLOUD_API_HOST}}"
+apiPort: "{{current_env.cloud_passport.cloud.CLOUD_API_PORT}}"
 privateUrl: ""
-publicUrl: ""
-dashboardUrl: ""
+publicUrl: "{{current_env.cloud_passport.cloud.CLOUD_API_PORT}}"
+dashboardUrl: "https://dashboard.{{current_env.cluster.cloud_public_url}}"
 labels: []
-defaultCredentialsId: ""
-protocol: "{{ current_env.cluster.cloud_api_protocol }}"
+defaultCredentialsId: "admin-token"
+protocol: "{{current_env.cluster.cloud_api_protocol}}"
 mergeDeployParametersAndE2EParameters: false
 dbMode: "db"
 databases: []
 maasConfig:
-  credentialsId: ""
-  maasUrl: ""
-  maasInternalAddress: ""
-  enable: false
+  credentialsId: "maas"
+  maasUrl: "http://maas.{{current_env.cluster.cloud_public_url}}"
+  maasInternalAddress: "http://maas.maas:8888"
+  enable: true
 vaultConfig:
   url: ""
   credentialsId: ""
   enable: false
 dbaasConfigs:
-  - credentialsId: ""
-    apiUrl: ""
-    aggregatorUrl: ""
-    enable: false
+  - credentialsId: "dbaas"
+    apiUrl: 'http://dbaas.dbaas:8888'
+    aggregatorUrl: 'https://dbaas.{{current_env.cluster.cloud_public_url}}'
+    enable: true
 consulConfig:
-  tokenSecret: ""
-  publicUrl: ""
-  enabled: false
-  internalUrl: ""
+  tokenSecret: "consul-token"
+  publicUrl: 'https://consul.{{current_env.cluster.cloud_public_url}}'
+  enabled: true
+  internalUrl: 'http://consul.consul:8888'
 deployParameters:
-  POSTGRES_SD_VERSION: "{{ current_env.solution_structure['postgres']['pg'].version }}"
-  POSTGRES_NAMESPACE: "{{ current_env.solution_structure['postgres']['pg'].namespace }}"
-e2eParameters: {}
+  ENV_NAME: "{{current_env.name}}"
+e2eParameters: 
+{% if current_env.cloud_passport.cloud.CLOUD_PUBLIC_HOST is defined %}
+    url: "https://toolset.{{ current_env.cloud_passport.cloud.CLOUD_PUBLIC_HOST }}"
+{% endif %}
+    INSTANSES_REPO: "https://github.com/Netcracker/qubership-envgene-instance"
 technicalConfigurationParameters: {}
 deployParameterSets: []
 e2eParameterSets: []
