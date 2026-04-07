@@ -7,7 +7,7 @@
     <version>${revision}</version>
 
     <name>${project.groupId}:${project.artifactId}</name>
-    <description>>A Maven artifact that contains templates for Qubership Envgene Instance</description>
+    <description>A Maven artifact that contains templates for Qubership Envgene Instance</description>
     <url>https://github.com/Netcracker/qubership-envgene-template</url>
     <licenses>
         <license>
@@ -116,6 +116,42 @@
                     <url>https://maven.pkg.github.com/netcracker/qubership-envgene-template</url>
                 </repository>
             </distributionManagement>
+        </profile>
+
+        <!-- Google Artifact Registry (Maven). Set gar.maven.repo.url, e.g. -Dgar.maven.repo.url=https://REGION-maven.pkg.dev/PROJECT_ID/REPOSITORY_ID/ -->
+        <!-- CI: authenticate with a service account (gcloud auth print-access-token) and set env CLOUD_ACCESS_TOKEN; ~/.m2/settings.xml must map server id "gar" with Authorization: Bearer ${env.CLOUD_ACCESS_TOKEN}. -->
+        <profile>
+            <id>gar</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <gar.maven.repo.url>https://REPLACE_REGION-maven.pkg.dev/REPLACE_PROJECT/REPLACE_REPO/</gar.maven.repo.url>
+            </properties>
+            <distributionManagement>
+                <repository>
+                    <id>gar</id>
+                    <name>Google Artifact Registry</name>
+                    <url>${gar.maven.repo.url}</url>
+                </repository>
+                <snapshotRepository>
+                    <id>gar</id>
+                    <name>Google Artifact Registry (snapshots)</name>
+                    <url>${gar.maven.repo.url}</url>
+                </snapshotRepository>
+            </distributionManagement>
+            <repositories>
+                <repository>
+                    <id>gar</id>
+                    <url>${gar.maven.repo.url}</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                    </snapshots>
+                </repository>
+            </repositories>
         </profile>
     </profiles>
 
