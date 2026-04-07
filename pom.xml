@@ -118,15 +118,15 @@
             </distributionManagement>
         </profile>
 
-        <!-- Google Artifact Registry (Maven). Set gar.maven.repo.url, e.g. -Dgar.maven.repo.url=https://REGION-maven.pkg.dev/PROJECT_ID/REPOSITORY_ID/ -->
-        <!-- CI: authenticate with a service account (gcloud auth print-access-token) and set env CLOUD_ACCESS_TOKEN; ~/.m2/settings.xml must map server id "gar" with Authorization: Bearer ${env.CLOUD_ACCESS_TOKEN}. -->
+        <!-- Google Artifact Registry: use -P gar,!github. Auth: GOOGLE_APPLICATION_CREDENTIALS (service account JSON). Override URL: -Dgar.maven.repo.url=artifactregistry://... -->
         <profile>
             <id>gar</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
             <properties>
-                <gar.maven.repo.url>https://REPLACE_REGION-maven.pkg.dev/REPLACE_PROJECT/REPLACE_REPO/</gar.maven.repo.url>
+                <!-- gcloud artifacts print-settings mvn --project=... --repository=... --location=... -->
+                <gar.maven.repo.url>artifactregistry://europe-west1-maven.pkg.dev/project-57115ebf-4c70-46af-bf2/andy-roode-maven-repo</gar.maven.repo.url>
             </properties>
             <distributionManagement>
                 <repository>
@@ -194,6 +194,14 @@
     </repositories>
 
     <build>
+        <!-- Resolves artifactregistry:// URLs; uses Application Default Credentials (GOOGLE_APPLICATION_CREDENTIALS). -->
+        <extensions>
+            <extension>
+                <groupId>com.google.cloud.artifactregistry</groupId>
+                <artifactId>artifactregistry-maven-wagon</artifactId>
+                <version>2.2.5</version>
+            </extension>
+        </extensions>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

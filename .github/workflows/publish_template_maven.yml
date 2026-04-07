@@ -36,7 +36,7 @@ on:
         required: false
         default: ''
         type: string
-        description: 'GAR Maven URL (https://REGION-maven.pkg.dev/PROJECT/REPO/). If empty, secret GAR_MAVEN_REPO_URL is used (required for profile gar).'
+        description: 'Optional override: artifactregistry://REGION-maven.pkg.dev/PROJECT/REPO (see pom gar profile default). Else secret GAR_MAVEN_REPO_URL, else pom default.'
       dry-run:
         required: false
         type: boolean
@@ -160,7 +160,7 @@ jobs:
       gpg-passphrase: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
       gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
 
-  # GAR uses OAuth2 (Bearer) via gcloud; the reusable maven-publish workflow expects username/password (GitHub/Central).
+  # GAR: artifactregistry-maven-wagon + ADC (GOOGLE_APPLICATION_CREDENTIALS from GCP_SA_KEY).
   mvn-deploy-gar:
     if: github.event.inputs.profile == 'gar'
     needs: [update-pom-version, tag]
@@ -174,45 +174,17 @@ jobs:
           ref: ${{ github.ref }}
           fetch-depth: 0
 
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: ${{ github.event.inputs.java-version }}
           cache: maven
-
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
-
-      - name: Set up gcloud
-        uses: google-github-actions/setup-gcloud@v2
-
-      - name: Configure Maven for GAR (Bearer token)
-        run: |
-          mkdir -p ~/.m2
-          cat > ~/.m2/settings.xml <<'EOF'
-          <settings xmlns="http://maven.apache.org/SETTINGS/1.2.0"
-                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                    xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0 https://maven.apache.org/xsd/settings-1.2.0.xsd">
-            <servers>
-              <server>
-                <id>gar</id>
-                <configuration>
-                  <httpConfiguration>
-                    <httpHeaders>
-                      <property>
-                        <name>Authorization</name>
-                        <value>Bearer ${env.CLOUD_ACCESS_TOKEN}</value>
-                      </property>
-                    </httpHeaders>
-                  </httpConfiguration>
-                </configuration>
-              </server>
-            </servers>
-          </settings>
-          EOF
 
       - name: Deploy to Google Artifact Registry
         if: github.event.inputs.dry-run != 'true'
@@ -221,12 +193,11 @@ jobs:
         run: |
           REPO_URL='${{ github.event.inputs.gar_maven_repo_url }}'
           if [ -z "$REPO_URL" ]; then REPO_URL="$GAR_MAVEN_REPO_URL_SECRET"; fi
-          if [ -z "$REPO_URL" ]; then
-            echo "Set secret GAR_MAVEN_REPO_URL or workflow input gar_maven_repo_url" >&2
-            exit 1
+          if [ -n "$REPO_URL" ]; then
+            mvn --batch-mode deploy -P 'gar,!github' -Dgar.maven.repo.url="$REPO_URL"
+          else
+            mvn --batch-mode deploy -P 'gar,!github'
           fi
-          export CLOUD_ACCESS_TOKEN="$(gcloud auth print-access-token)"
-          mvn --batch-mode deploy -P gar -Dgar.maven.repo.url="$REPO_URL"
 
       - name: Dry run (GAR deploy skipped)
         if: github.event.inputs.dry-run == 'true'
