@@ -125,7 +125,7 @@
                 <activeByDefault>false</activeByDefault>
             </activation>
             <properties>
-                <!-- gcloud artifacts print-settings mvn --project=... --repository=... --location=... -->
+                <!-- Hint: gcloud artifacts print-settings mvn (pass project, repository, location as flags). -->
                 <gar.maven.repo.url>artifactregistry://europe-west1-maven.pkg.dev/project-57115ebf-4c70-46af-bf2/andy-roode-maven-repo</gar.maven.repo.url>
             </properties>
             <distributionManagement>
