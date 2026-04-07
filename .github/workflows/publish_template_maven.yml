@@ -193,12 +193,15 @@ jobs:
         run: |
           REPO_URL='${{ github.event.inputs.gar_maven_repo_url }}'
           if [ -z "$REPO_URL" ]; then REPO_URL="$GAR_MAVEN_REPO_URL_SECRET"; fi
+          # Avoid literal U+0021 in YAML; Maven still gets profile list gar plus deactivated github
+          _P_DEACT="$(printf '\x21')github"
           if [ -n "$REPO_URL" ]; then
-            mvn --batch-mode deploy -P 'gar,!github' -Dgar.maven.repo.url="$REPO_URL"
+            mvn --batch-mode deploy -P "gar,${_P_DEACT}" -Dgar.maven.repo.url="$REPO_URL"
           else
-            mvn --batch-mode deploy -P 'gar,!github'
+            mvn --batch-mode deploy -P "gar,${_P_DEACT}"
           fi
 
       - name: Dry run (GAR deploy skipped)
         if: github.event.inputs.dry-run == 'true'
-        run: echo "Dry run: skipped mvn deploy to GAR" >> $GITHUB_STEP_SUMMARY
+        run: |
+          echo "Dry run: skipped mvn deploy to GAR" >> $GITHUB_STEP_SUMMARY
