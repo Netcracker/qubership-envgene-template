@@ -16,8 +16,6 @@ deployParameters:
   ENVGENE_CONFIG_TAG: "{{ lookup('ansible.builtin.env', 'CI_COMMIT_TAG') | default('No Ref tag') }}"
   PG_NAMESPACE_FROM_SD: "{{ current_env.solution_structure['postgres-pg16']['postgresql-pg16'].namespace }}"
   PG_VERSION_FROM_SD: "{{ current_env.solution_structure['postgres-pg16']['postgresql-pg16'].version }}"
-  PG_SERVICES_NAMESPACE_FROM_SD: "{{ current_env.solution_structure['postgres-services']['postgresql-services'].namespace }}"
-  PG_SERVICES_VERSION_FROM_SD: "{{ current_env.solution_structure['postgres-services']['postgresql-services'].version }}"
 e2eParameters: {}
 technicalConfigurationParameters: {}
 deployParameterSets: []

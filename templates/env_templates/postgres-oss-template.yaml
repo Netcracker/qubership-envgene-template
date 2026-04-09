@@ -1,7 +1,0 @@
----
-tenant: "{{ templates_dir }}/env_templates/postgres-oss/tenant.yml.j2"
-cloud:
-  template_path: "{{ templates_dir }}/env_templates/postgres-oss/cloud.yml.j2"
-namespaces:
-  - template_path: "{{ templates_dir }}/env_templates/postgres-oss/Namespaces/pg.yml.j2"
-    deploy_postfix: "pg"

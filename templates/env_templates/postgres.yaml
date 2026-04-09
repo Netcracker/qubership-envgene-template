@@ -1,0 +1,9 @@
+---
+tenant: "{{ templates_dir }}/env_templates/postgres/tenant.yml.j2"
+cloud:
+  template_path: "{{ templates_dir }}/env_templates/postgres/cloud.yml.j2"
+namespaces:
+  - template_path: "{{ templates_dir }}/env_templates/postgres/Namespaces/postgresql-pg16.yml.j2"
+    deploy_postfix: "postgresql-pg16"
+  - template_path: "{{ templates_dir }}/env_templates/postgres/Namespaces/postgresql-services.yml.j2"
+    deploy_postfix: "postgresql-services"
