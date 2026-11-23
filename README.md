@@ -191,7 +191,8 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 ## Support
 
 - **Developer**: Netcracker Technology
-- **Email**: opensourcegroup@netcracker.com
+<!-- markdownlint-disable-next-line MD034 -->
+- **Email**: opensourcegroup@netcracker.com.
 - **GitHub**: https://github.com/Netcracker/qubership-envgene-template
 
 ## Contributing
